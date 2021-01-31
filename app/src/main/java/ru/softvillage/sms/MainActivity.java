@@ -3,6 +3,7 @@ package ru.softvillage.sms;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SubscriptionInfo;
 import android.util.Log;
@@ -23,6 +24,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//Запуск http службы
+        startService(new Intent(MainActivity.this, HttpService.class));
+
+
 // Формируем проверочный код
         if (savedInstanceState != null) {
             secretCode = savedInstanceState.getString("Secret", null);
@@ -80,14 +85,18 @@ public class MainActivity extends AppCompatActivity {
      * Затем начинаем опрашивать сервер о наличае данных о устройстве.
      */
     public void fillTelNo(View view) {
+        //SMS
         for (SubscriptionInfo sim : subscriptionList) {
             secretCode = generateSecretCode();
-            MessageSender.send(this, secretCode, sim.getSubscriptionId());
+            //MessageSender.send(this, secretCode, sim.getSubscriptionId());
             Log.i(TAG, "Отправили на шлюз код " + secretCode + " c sim №: " + sim.getSubscriptionId());
         }
+        //HTTP
+        stopService(new Intent(MainActivity.this, HttpService.class));
+
     }
 
-    public void exit(View view) {
+    public void exit(View view) throws InterruptedException {
         System.exit(1);
     }
 }
