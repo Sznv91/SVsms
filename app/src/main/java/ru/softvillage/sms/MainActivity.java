@@ -61,12 +61,11 @@ public class MainActivity extends AppCompatActivity {
             result += sim.getOperatorName() + "\r\n";
             result += sim.getIccid() + "\r\n";
             result += "Slot: " + sim.getSlotNumber() + "\r\n";
-            result += "Tel №:" + "\r\n";
             result += "SecureCode: " + sim.getSecureCode();
             Log.i(TAG, result + " Сформировали текст с доступной информацией. Sim №: " + sim.getSlotNumber());
             TextView simInfo = new TextView(this);
-            simInfo.setId(sim.getSlotNumber());
-            simInfo.setTag(sim.getSlotNumber());
+//            simInfo.setId(sim.getSlotNumber());
+            simInfo.setTag(sim.getIccid());
             simInfo.setText(result);
             simInfo.setPadding(20, 20, 20, 20);
             simContent.addView(simInfo);
