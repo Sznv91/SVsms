@@ -7,6 +7,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -28,6 +30,9 @@ import ru.softvillage.sms.model.SimNumTo;
 import ru.softvillage.sms.network.NetworkService;
 
 public class HttpService extends Service {
+
+    LinearLayout simContent;
+
     private static final String TAG = "SVsim";
 
     ExecutorService es;
@@ -77,8 +82,17 @@ public class HttpService extends Service {
         ArrayList<Sim> simList = intent.getParcelableArrayListExtra("simList");
 //        Sim[] simArray = (Sim[]) intent.getExtras().get("simList");
         Log.d(TAG, "Получили список симкарт в Сервисе" + simList);
-        work(simList);
+//        work(simList);
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void changeTextView(LinearLayout simContent, List<Sim> simList){
+        this.simContent = simContent;
+        TextView oneSim = this.simContent.findViewWithTag(simList.get(0).getSlotNumber());
+        oneSim.setText("ЭТОТ ТЕКСТ НАПИСАН ИЗ РАБОТАЮЩЕГО СЕРВИСА!!!");
+
+        work(simList);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -100,6 +114,7 @@ public class HttpService extends Service {
 
     private class MyRun implements Runnable {
 
+
         List<Sim> simList;
         Answer[] answer = new Answer[1];
 
@@ -110,6 +125,14 @@ public class HttpService extends Service {
         @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void run() {
+
+            if (simContent != null){
+                TextView oneSim = simContent.findViewWithTag(simList.get(0).getSlotNumber());
+                oneSim.setText("ЭТОТ ТЕКСТ ИЗМЕНЕН ИЗ ПОТОКА!!!");
+            } else {
+                System.out.println("НЕ ИНИЗИАЛИЗИРОВАЛИ simContent");
+            }
+
 
             //        simList.forEach(sim -> Log.d(TAG, sim.toString() + " Обработка симкарт в work() методе сервиса"));
             Map<String, Boolean> detectNumbers = new HashMap<>();

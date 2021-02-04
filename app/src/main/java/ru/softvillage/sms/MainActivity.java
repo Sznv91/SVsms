@@ -9,6 +9,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.telephony.SubscriptionInfo;
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, result + " Сформировали текст с доступной информацией. Sim №: " + sim.getSlotNumber());
             TextView simInfo = new TextView(this);
             simInfo.setId(sim.getSlotNumber());
+            simInfo.setTag(sim.getSlotNumber());
             simInfo.setText(result);
             simInfo.setPadding(20, 20, 20, 20);
             simContent.addView(simInfo);
@@ -73,8 +75,6 @@ public class MainActivity extends AppCompatActivity {
         //Запуск http службы
         Intent intent = new Intent(MainActivity.this, HttpService.class);
         intent.putParcelableArrayListExtra("simList", simList);
-
-        startService(intent);
 
         // Отправляем по HTTP иформацию о симкартах и Проверочном коде.
         getAuthHttp();
@@ -96,7 +96,16 @@ public class MainActivity extends AppCompatActivity {
         };
 
         bindService(intent, sConn, BIND_AUTO_CREATE);
+        startService(intent);
 
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+//                myService.simContent = simContent;
+                myService.changeTextView(simContent, simList);
+            }
+        }, 3000);
 //        myService.binder
     }
 
