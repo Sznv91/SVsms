@@ -1,5 +1,6 @@
 package ru.softvillage.sms;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -32,6 +33,8 @@ import ru.softvillage.sms.model.SimNumTo;
 import ru.softvillage.sms.network.NetworkService;
 
 public class HttpService extends Service {
+
+    Activity activity;
 
     LinearLayout simContent;
 
@@ -72,7 +75,8 @@ public class HttpService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    public void changeTextView(LinearLayout simContent, List<Sim> simList) {
+    public void changeTextView(Activity act, LinearLayout simContent, List<Sim> simList) {
+        activity = act;
         this.simContent = simContent;
         /*TextView oneSim = this.simContent.findViewWithTag(simList.get(0).getIccid()); //Для демонстрации изменения текста из сервиса
         oneSim.setText("ЭТОТ ТЕКСТ НАПИСАН ИЗ РАБОТАЮЩЕГО СЕРВИСА!!!");*/               //Для демонстрации изменения текста из сервиса
@@ -176,12 +180,15 @@ public class HttpService extends Service {
         }
 
         private void performOnScreenDisplay(@NotNull Answer answer) {
-            for (SimNum sim : answer.getSimNumList()) {
-                Log.d(TAG, sim.getNumber() + " Полученный номер телефона");
-                TextView onDisplay = simContent.findViewWithTag(sim.getIccid());
-                String text = onDisplay.getText().toString() + "\r\nTel №: " + sim.getNumber();
-                onDisplay.setText(text);
-            }
+
+            activity.runOnUiThread(() -> {
+                for (SimNum sim : answer.getSimNumList()) {
+                    Log.d(TAG, sim.getNumber() + " Полученный номер телефона");
+                    TextView onDisplay = simContent.findViewWithTag(sim.getIccid());
+                    String text = onDisplay.getText().toString() + "\r\nTel №: " + sim.getNumber();
+                    onDisplay.setText(text);
+                }
+            });
         }
     }
 

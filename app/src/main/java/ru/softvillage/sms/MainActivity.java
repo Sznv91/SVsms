@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
             public void onServiceConnected(ComponentName name, IBinder binder) {
                 Log.d(TAG, "MainActivity onServiceConnected");
-                    myService = ((HttpService.MyBinder) binder).getService();
+                myService = ((HttpService.MyBinder) binder).getService();
                 bound = true;
             }
 
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
 //                myService.simContent = simContent;
-                myService.changeTextView(simContent, simList);
+                myService.changeTextView(MainActivity.this, simContent, simList);
             }
         }, 3000);
 //        myService.binder
