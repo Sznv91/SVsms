@@ -1,11 +1,9 @@
 package ru.softvillage.sms.view;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.view.View;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -16,6 +14,8 @@ import ru.softvillage.sms.model.Entity.Sim;
 import ru.softvillage.sms.presenter.SimPresenter;
 
 public class SimActivity extends AppCompatActivity {
+    private static final String TAG = "SVsim";
+
     SimPresenter presenter;
     LinearLayout mainLayout;
     TextView status;
@@ -32,12 +32,13 @@ public class SimActivity extends AppCompatActivity {
         findViewById(R.id.exit_button).setOnClickListener(v -> System.exit(1));
         mainLayout = findViewById(R.id.display_sim);
         status = findViewById(R.id.status);
-        if (presenter == null){
+        if (presenter == null) {
             presenter = new SimPresenter(SimActivity.this);
         }
     }
 
     public void showSims(List<Sim> simList) {
+        Log.d(TAG, "SimActivity -> showSims");
         for (Sim sim : simList) {
             TextView singleSim = mainLayout.findViewWithTag(sim.getIccid());
             singleSim.setText(sim.toString());
@@ -54,7 +55,7 @@ public class SimActivity extends AppCompatActivity {
         }
     }
 
-    public void showStatus(String status){
+    public void showStatus(String status) {
         this.status.setText(status);
     }
 }

@@ -34,7 +34,7 @@
         android:id="@+id/display_sim"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         app:layout_constraintTop_toTopOf="parent">
 
     </LinearLayout>

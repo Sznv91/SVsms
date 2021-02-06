@@ -1,33 +1,48 @@
 package ru.softvillage.sms.presenter;
 
+import android.util.Log;
+
 import java.util.List;
 
+import ru.softvillage.sms.MessageSender;
+import ru.softvillage.sms.SubscriptionManUtil;
 import ru.softvillage.sms.model.Entity.Sim;
 import ru.softvillage.sms.model.SimCardModel;
 import ru.softvillage.sms.network.NetworkService;
 import ru.softvillage.sms.view.SimActivity;
 
 public class SimPresenter {
+    private static final String TAG = "SVsim";
 
     SimActivity view;
     SimCardModel model;
 
     public SimPresenter(SimActivity view) {
         this.view = view;
+        model = new SimCardModel(NetworkService.getInstance(), new SubscriptionManUtil(view));
         init();
     }
 
     private void init() {
-        model = new SimCardModel(NetworkService.getInstance(), view);
-        view.initSims(model.getSimsList(new SimCardModel.CompleteDetectCallback() {
-            @Override
-            public void onDetect(List<Sim> sims) {
-                view.showSims(sims);
-            }
-        }));
+        view.initSims(model.getSimsList(/*this*/));
         view.showStatus("Выполнили инициализацию сим карт");
+        model.detectSimNumber(this);
+    }
 
-//        model.
+    public void showPhoneNumberOnDisplay(List<Sim> simList) {
+        view.showSims(simList);
+        view.showStatus("Определили номера телефонов");
+    }
+
+    public void sendSms(){
+        for (Sim sim : model.getSimsList()) {
+            MessageSender.send(view, String.valueOf(sim.getSecureCode()), sim.getSlotNumber());
+            Log.i(TAG, "Отправили на шлюз код " + String.valueOf(sim.getSecureCode()) + " c sim №: " + sim.getSlotNumber());
+        }
+    }
+
+    public SimActivity getView() {
+        return view;
     }
 
 

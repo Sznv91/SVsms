@@ -1,7 +1,6 @@
 package ru.softvillage.sms.model;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.os.AsyncTask;
@@ -22,91 +21,96 @@ import ru.softvillage.sms.model.Entity.AuthTo;
 import ru.softvillage.sms.model.Entity.Sim;
 import ru.softvillage.sms.model.Entity.SimNum;
 import ru.softvillage.sms.network.NetworkService;
+import ru.softvillage.sms.presenter.SimPresenter;
 import ru.softvillage.sms.util.SecretCodeGenerator;
 
 public class SimCardModel {
     private static final String TAG = "SVsim";
-
-
     private final List<Sim> simList;
-    Activity view;
-
     private final NetworkService networkService;
 
-    public SimCardModel(NetworkService networkService, Activity view) {
+    public SimCardModel(NetworkService networkService, SubscriptionManUtil subscriptionList) {
         this.networkService = networkService;
-        this.view = view;
         simList = new ArrayList<>();
-        initSims();
+        initSims(subscriptionList);
     }
 
-    private void initSims() {
-        SubscriptionManUtil subscriptionList = new SubscriptionManUtil(view); // Переделать на static
+    private void initSims(SubscriptionManUtil subscriptionList) {
         for (SubscriptionInfo subscription : subscriptionList.getList()) {
             simList.add(new Sim(subscription.getIccId(), subscription.getCarrierName().toString(), subscription.getSubscriptionId(), SecretCodeGenerator.getCode()));
         }
     }
 
-    public List<Sim> getSimsList(CompleteDetectCallback callback) {
-        DetectSimNumber detectSimNumber = new DetectSimNumber(callback);
-
+    public List<Sim> getSimsList() {
         return simList;
     }
 
-    public interface CompleteDetectCallback {
-        void onDetect(List<Sim> sims);
+    public void detectSimNumber(SimPresenter presenter) {
+        DetectSimNumber detectSimNumber = new DetectSimNumber(presenter);
+        detectSimNumber.execute();
     }
 
-    class DetectSimNumber extends AsyncTask<ContentValues, Void, List<Sim>> {
+    public class DetectSimNumber extends AsyncTask<ContentValues, Void, List<Sim>> {
+        int flag = 0;
+        int smsFlag = 0;
+        SimPresenter presenter;
 
-        private final CompleteDetectCallback callback;
-
-        public DetectSimNumber(CompleteDetectCallback callback) {
-            this.callback = callback;
-        }
-
-        @Override
-        protected void onPostExecute(List<Sim> sims) {
-            if (callback != null) {
-                callback.onDetect(sims);
-                Log.d(TAG, "Возвращаем callback");
-
-            }
-//            super.onPostExecute(sims);
+        public DetectSimNumber(SimPresenter presenter) {
+            this.presenter = presenter;
         }
 
         @Override
         protected List<Sim> doInBackground(ContentValues... contentValues) {
             // Узнаем Уникальный идентификатор устройства
-            ContentResolver contentResolver = view.getContentResolver();
+            ContentResolver contentResolver = presenter.getView().getContentResolver();
             @SuppressLint("HardwareIds") String android_id = Settings.Secure.getString(contentResolver,
                     Settings.Secure.ANDROID_ID);
-Log.d(TAG, "Уникальный идентификатор устройста: " + android_id);
+            Log.d(TAG, "Уникальный идентификатор устройста: " + android_id);
             // Узнаем версию Android API
             int androidVersionApi = android.os.Build.VERSION.SDK_INT;
 
             // Создаем Transfer Object Authentication
             AuthTo authTo = new AuthTo(simList, android_id, androidVersionApi);
-
-            networkService.postCheckNumberApi().postAuth(authTo).enqueue(new Callback<Answer>() {
-                @Override
-                public void onResponse(Call<Answer> call, Response<Answer> response) {
-                    Answer answer = response.body();
-                    for (SimNum num : answer.getSimNumList()) {
-                        if (TextUtils.isEmpty(num.getNumber())) {
-                            //sendSMS();
-                            //Добавляем номера телефонов в simList
+            while (simList.size() > flag) {
+                networkService.postCheckNumberApi().postAuth(authTo).enqueue(new Callback<Answer>() {
+                    @Override
+                    public void onResponse(Call<Answer> call, Response<Answer> response) {
+                        Answer answer = response.body();
+                        assert answer != null;
+                        for (SimNum num : answer.getSimNumList()) {
+                            if (!TextUtils.isEmpty(num.getNumber())) {
+                                for (Sim sim : simList) {
+                                    if (sim.getIccid().equals(num.getIccid())) {
+                                        Log.d(TAG, "Номер телефона " + num.getNumber() + "\r\n flag count = " + flag + "\r\nSimList size: " + simList.size());
+                                        sim.setPhoneNumber(num.getNumber());
+                                        flag++;
+                                    }
+                                }
+                                //sendSMS();
+                                //Добавляем номера телефонов в simList
+                            } else {
+                                if (smsFlag < 1) {
+                                    presenter.sendSms();
+                                    smsFlag++;
+                                }
+                            }
                         }
+                        presenter.showPhoneNumberOnDisplay(simList);
                     }
+
+                    @Override
+                    public void onFailure(Call<Answer> call, Throwable t) {
+                        Log.d(TAG, "Неудачаная доставка по сети. Throwable:\r\n" + t.getMessage());
+                    }
+                });
+
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
 
-                @Override
-                public void onFailure(Call<Answer> call, Throwable t) {
-
-                }
-            });
-
-
+            }
             return simList;
         }
 
