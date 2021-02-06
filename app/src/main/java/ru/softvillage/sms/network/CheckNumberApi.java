@@ -4,8 +4,8 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
-import ru.softvillage.sms.model.Answer;
-import ru.softvillage.sms.model.AuthTo;
+import ru.softvillage.sms.model.Entity.Answer;
+import ru.softvillage.sms.model.Entity.AuthTo;
 
 public interface CheckNumberApi {
 

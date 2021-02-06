@@ -24,10 +24,10 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import ru.softvillage.sms.model.Answer;
-import ru.softvillage.sms.model.AuthTo;
-import ru.softvillage.sms.model.Sim;
-import ru.softvillage.sms.model.SimNum;
+import ru.softvillage.sms.model.Entity.Answer;
+import ru.softvillage.sms.model.Entity.AuthTo;
+import ru.softvillage.sms.model.Entity.Sim;
+import ru.softvillage.sms.model.Entity.SimNum;
 import ru.softvillage.sms.network.NetworkService;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     HttpService myService;
 
 
-    SubscriptionManUtil subscriptions = new SubscriptionManUtil();
+    SubscriptionManUtil subscriptions = new SubscriptionManUtil(this);
     private List<SimNum> telephoneNumbers;
     private ArrayList<Sim> simList;
 
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 //  Выводим на экран информацю о сим.
 
         // init SIM list
-        makeSimList(subscriptions.getList(this));
+        makeSimList(subscriptions.getList());
         TextView simCount = findViewById(R.id.sim_count);
         Log.i(TAG, simList.size() + " Размер списка активных симкарт");
         simCount.setText(String.valueOf(simList.size()));

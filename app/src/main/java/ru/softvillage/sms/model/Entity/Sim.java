@@ -1,4 +1,4 @@
-package ru.softvillage.sms.model;
+package ru.softvillage.sms.model.Entity;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -24,6 +24,10 @@ public class Sim implements Parcelable {
     @Expose
     private int secureCode;
 
+    /*@SerializedName("phone_number")
+    @Expose*/
+    private String phoneNumber;
+
     public Sim() {
     }
 
@@ -32,13 +36,7 @@ public class Sim implements Parcelable {
         this.operatorName = operatorName;
         this.slotNumber = slotNumber;
         this.secureCode = secureCode;
-    }
-
-    public Sim(String iccid, String operatorName, String slotNumber, String secureCode) {
-        this.iccid = iccid;
-        this.operatorName = operatorName;
-        this.slotNumber = Integer.parseInt(slotNumber);
-        this.secureCode = Integer.parseInt(secureCode);
+        phoneNumber = null;
     }
 
     protected Sim(Parcel in) {
@@ -92,14 +90,22 @@ public class Sim implements Parcelable {
         this.secureCode = secureCode;
     }
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
     @Override
     public String toString() {
-        return "Sim{" +
-                "iccid='" + iccid + '\'' +
-                ", operatorName='" + operatorName + '\'' +
-                ", slotNumber=" + slotNumber +
-                ", secureCode=" + secureCode +
-                '}';
+        return "Sim: " + "\r\n" +
+                "iccid='" + iccid + '\'' + "\r\n" +
+                "operatorName='" + operatorName + '\'' + "\r\n" +
+                "slotNumber=" + slotNumber + "\r\n" +
+                "secureCode=" + secureCode + "\r\n" +
+                "phoneNumber='" + phoneNumber + '\'';
     }
 
     @Override

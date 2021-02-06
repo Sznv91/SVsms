@@ -1,4 +1,4 @@
-package ru.softvillage.sms.model;
+package ru.softvillage.sms.model.Entity;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

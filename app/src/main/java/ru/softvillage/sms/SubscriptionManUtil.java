@@ -13,11 +13,20 @@ import androidx.core.app.ActivityCompat;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.softvillage.sms.model.Entity.Sim;
+import ru.softvillage.sms.util.SecretCodeGenerator;
+
 import static androidx.core.content.ContextCompat.getSystemService;
 
 public class SubscriptionManUtil {
 
     SubscriptionManager subscriptionManager;
+    Activity activity;
+
+    public SubscriptionManUtil(Activity activity) {
+        this.activity = activity;
+        init(this.activity);
+    }
 
     /**
      * Запрашиваем разрешение на чтение информации о симкартах.
@@ -33,7 +42,7 @@ public class SubscriptionManUtil {
         }
     }
 
-    public List<SubscriptionInfo> getList(Activity activity) {
+    public List<SubscriptionInfo> getList() {
         if (subscriptionManager == null) {
             init(activity);
             return new ArrayList<>(subscriptionManager.getActiveSubscriptionInfoList());

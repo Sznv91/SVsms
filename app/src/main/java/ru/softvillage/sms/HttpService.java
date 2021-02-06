@@ -4,15 +4,11 @@ import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
-import android.text.TextUtils;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.annotation.RequiresApi;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -26,10 +22,10 @@ import java.util.concurrent.Executors;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import ru.softvillage.sms.model.Answer;
-import ru.softvillage.sms.model.Sim;
-import ru.softvillage.sms.model.SimNum;
-import ru.softvillage.sms.model.SimNumTo;
+import ru.softvillage.sms.model.Entity.Answer;
+import ru.softvillage.sms.model.Entity.Sim;
+import ru.softvillage.sms.model.Entity.SimNum;
+import ru.softvillage.sms.model.Entity.SimNumTo;
 import ru.softvillage.sms.network.NetworkService;
 
 public class HttpService extends Service {
