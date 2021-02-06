@@ -12,6 +12,9 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -49,7 +52,7 @@ public class SimCardModel {
 
     public List<Sim> getSimsList(CompleteDetectCallback callback) {
         DetectSimNumber detectSimNumber = new DetectSimNumber(callback);
-
+        detectSimNumber.execute();
         return simList;
     }
 
@@ -68,8 +71,9 @@ public class SimCardModel {
         @Override
         protected void onPostExecute(List<Sim> sims) {
             if (callback != null) {
+                Log.d(TAG, "DetectSimNumber -> onPostExecute");
                 callback.onDetect(sims);
-                Log.d(TAG, "Возвращаем callback");
+//                Log.d(TAG, "Возвращаем callback");
 
             }
 //            super.onPostExecute(sims);
@@ -77,11 +81,11 @@ public class SimCardModel {
 
         @Override
         protected List<Sim> doInBackground(ContentValues... contentValues) {
+            Log.d(TAG, "DetectSimNumber -> doInBackground");
             // Узнаем Уникальный идентификатор устройства
             ContentResolver contentResolver = view.getContentResolver();
             @SuppressLint("HardwareIds") String android_id = Settings.Secure.getString(contentResolver,
                     Settings.Secure.ANDROID_ID);
-Log.d(TAG, "Уникальный идентификатор устройста: " + android_id);
             // Узнаем версию Android API
             int androidVersionApi = android.os.Build.VERSION.SDK_INT;
 
@@ -91,9 +95,12 @@ Log.d(TAG, "Уникальный идентификатор устройста: 
             networkService.postCheckNumberApi().postAuth(authTo).enqueue(new Callback<Answer>() {
                 @Override
                 public void onResponse(Call<Answer> call, Response<Answer> response) {
+                    Log.d(TAG, "Получили ответ от сервера: " + response.body());
                     Answer answer = response.body();
                     for (SimNum num : answer.getSimNumList()) {
-                        if (TextUtils.isEmpty(num.getNumber())) {
+                        if (!TextUtils.isEmpty(num.getNumber())) {
+                            Log.d(TAG, "Получили ответ от сервера; number: " + num.getNumber());
+
                             //sendSMS();
                             //Добавляем номера телефонов в simList
                         }
@@ -102,7 +109,7 @@ Log.d(TAG, "Уникальный идентификатор устройста: 
 
                 @Override
                 public void onFailure(Call<Answer> call, Throwable t) {
-
+                    Log.d(TAG, "Передача не удалась");
                 }
             });
 
