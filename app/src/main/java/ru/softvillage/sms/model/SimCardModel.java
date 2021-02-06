@@ -27,10 +27,8 @@ import ru.softvillage.sms.util.SecretCodeGenerator;
 public class SimCardModel {
     private static final String TAG = "SVsim";
     private final List<Sim> simList;
-    private final NetworkService networkService;
 
-    public SimCardModel(NetworkService networkService, SubscriptionManUtil subscriptionList) {
-        this.networkService = networkService;
+    public SimCardModel(SubscriptionManUtil subscriptionList) {
         simList = new ArrayList<>();
         initSims(subscriptionList);
     }
@@ -73,7 +71,7 @@ public class SimCardModel {
             // Создаем Transfer Object Authentication
             AuthTo authTo = new AuthTo(simList, android_id, androidVersionApi);
             while (simList.size() > flag) {
-                networkService.postCheckNumberApi().postAuth(authTo).enqueue(new Callback<Answer>() {
+                presenter.getNetworkService().postCheckNumberApi().postAuth(authTo).enqueue(new Callback<Answer>() {
                     @Override
                     public void onResponse(Call<Answer> call, Response<Answer> response) {
                         Answer answer = response.body();

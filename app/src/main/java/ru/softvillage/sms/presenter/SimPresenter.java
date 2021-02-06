@@ -19,7 +19,7 @@ public class SimPresenter {
 
     public SimPresenter(SimActivity view) {
         this.view = view;
-        model = new SimCardModel(NetworkService.getInstance(), new SubscriptionManUtil(view));
+        model = new SimCardModel(new SubscriptionManUtil(view));
         init();
     }
 
@@ -34,7 +34,7 @@ public class SimPresenter {
         view.showStatus("Определили номера телефонов");
     }
 
-    public void sendSms(){
+    public void sendSms() {
         for (Sim sim : model.getSimsList()) {
             MessageSender.send(view, String.valueOf(sim.getSecureCode()), sim.getSlotNumber());
             Log.i(TAG, "Отправили на шлюз код " + String.valueOf(sim.getSecureCode()) + " c sim №: " + sim.getSlotNumber());
@@ -43,6 +43,10 @@ public class SimPresenter {
 
     public SimActivity getView() {
         return view;
+    }
+
+    public NetworkService getNetworkService() {
+        return NetworkService.getInstance();
     }
 
 
