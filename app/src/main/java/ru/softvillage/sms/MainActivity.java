@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
                 Answer answer = response.body();
                 telephoneNumbers = new ArrayList<>(answer.getSimNumList());
                 Log.i(TAG, "Получили номера телефонов " + telephoneNumbers);
+                displayPhoneNumber();
             }
 
             @Override
@@ -192,6 +193,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Log.i(TAG, "Ожидаем что отправка уже выполнена.");
+    }
+
+    public void displayPhoneNumber(){
+        LinearLayout simContent = findViewById(R.id.sim_content);
+        for (SimNum simNum : telephoneNumbers){
+            TextView simDisplay = simContent.findViewWithTag(simNum.getIccid());
+            String text = simDisplay.getText().toString();
+            text += "\r\n" + "Tel.№: " + simNum.getNumber();
+            simDisplay.setText(text);
+        }
+
     }
 
 }

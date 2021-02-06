@@ -133,6 +133,7 @@ public class HttpService extends Service {
                 toSend.add(new SimNumTo(sim.getIccid(), "", sim.getSecureCode()));
             }
 
+            boolean firstIteration = true;
             boolean flag = true;
 
             while (flag) {
@@ -144,12 +145,16 @@ public class HttpService extends Service {
                     for (SimNum sim : answer.getSimNumList()) {
                         if (sim.getNumber() != null && sim.getNumber().length() == 11) {
                             Log.d(TAG, "Второй этап проверки получения номера телефона");
+                            if (firstIteration) {
+                                performOnScreenDisplay(answer, "first");
+                                firstIteration = false;
+                            }
 
                             detectNumbers.put(sim.getIccid(), true);
                         }
                         if (detectNumbers.size() == simList.size()) {
                             Log.d(TAG, "Третий этап проверки получения номера телефона");
-                            performOnScreenDisplay(answer);
+                            performOnScreenDisplay(answer, "second");
                             flag = false;
                             break;
                         }
@@ -179,16 +184,51 @@ public class HttpService extends Service {
 
         }
 
-        private void performOnScreenDisplay(@NotNull Answer answer) {
+        private void performOnScreenDisplay(@NotNull Answer answer, String iteration) {
+            switch (iteration) {
+                case "first":
+                    activity.runOnUiThread(() -> {
+                        for (SimNum sim : answer.getSimNumList()) {
+                            Log.d(TAG, sim.getNumber() + " Полученный номер телефона");
+                            TextView onDisplay = simContent.findViewWithTag(sim.getIccid());
+                            String text = onDisplay.getText().toString() + "\r\nTel №: " + sim.getNumber();
+                            onDisplay.setText(text);
+                        }
+                    });
+                    break;
+                case "second":
+                    activity.runOnUiThread(() -> {
+                                for (SimNum sim : answer.getSimNumList()) {
+                                    Log.d(TAG, sim.getNumber() + " Полученный номер телефона");
+                                    TextView onDisplay = simContent.findViewWithTag(sim.getIccid());
+                                    String[] array = onDisplay.getText().toString().split("\r\n");
+                                    String text = "";
+                                    int count = 0;
+                                    for (String string : array) {
+                                        if (count <= 3) {
+                                            text += string;
+                                            text += "\r\n";
+                                            count++;
+                                        }
+                                    }
+                                    text += "Tel №: " + sim.getNumber();
+//                            String text = onDisplay.getText().toString() + "\r\nTel №: " + sim.getNumber();
+                                    onDisplay.setText(text);
+                                }
+                            }
+                    );
 
-            activity.runOnUiThread(() -> {
-                for (SimNum sim : answer.getSimNumList()) {
-                    Log.d(TAG, sim.getNumber() + " Полученный номер телефона");
-                    TextView onDisplay = simContent.findViewWithTag(sim.getIccid());
-                    String text = onDisplay.getText().toString() + "\r\nTel №: " + sim.getNumber();
-                    onDisplay.setText(text);
-                }
-            });
+                    /*activity.runOnUiThread(() -> {
+                        for (SimNum sim : answer.getSimNumList()) {
+                            TextView onDisplay = simContent.findViewWithTag(sim.getIccid());
+                            String text = onDisplay.getText().toString() + "Tel №: " + sim.getNumber();
+                            onDisplay.setText(text);
+                        }
+                    });*/
+
+                    break;
+            }
+
         }
     }
 
