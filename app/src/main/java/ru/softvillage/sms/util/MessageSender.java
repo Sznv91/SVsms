@@ -1,4 +1,4 @@
-package ru.softvillage.sms;
+package ru.softvillage.sms.util;
 
 import android.Manifest;
 import android.app.Activity;

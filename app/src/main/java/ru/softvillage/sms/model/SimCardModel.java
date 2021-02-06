@@ -15,11 +15,11 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import ru.softvillage.sms.SubscriptionManUtil;
+import ru.softvillage.sms.model.Entity.SimNum;
+import ru.softvillage.sms.util.SubscriptionManUtil;
 import ru.softvillage.sms.model.Entity.Answer;
 import ru.softvillage.sms.model.Entity.AuthTo;
 import ru.softvillage.sms.model.Entity.Sim;
-import ru.softvillage.sms.model.Entity.SimNum;
 import ru.softvillage.sms.network.NetworkService;
 import ru.softvillage.sms.presenter.SimPresenter;
 import ru.softvillage.sms.util.SecretCodeGenerator;
@@ -50,6 +50,7 @@ public class SimCardModel {
         detectSimNumber.execute();
     }
 
+    @SuppressLint("StaticFieldLeak")
     public class DetectSimNumber extends AsyncTask<ContentValues, Void, List<Sim>> {
         int flag = 0;
         int smsFlag = 0;

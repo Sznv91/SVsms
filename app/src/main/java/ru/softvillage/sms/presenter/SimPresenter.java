@@ -4,8 +4,8 @@ import android.util.Log;
 
 import java.util.List;
 
-import ru.softvillage.sms.MessageSender;
-import ru.softvillage.sms.SubscriptionManUtil;
+import ru.softvillage.sms.util.MessageSender;
+import ru.softvillage.sms.util.SubscriptionManUtil;
 import ru.softvillage.sms.model.Entity.Sim;
 import ru.softvillage.sms.model.SimCardModel;
 import ru.softvillage.sms.network.NetworkService;
