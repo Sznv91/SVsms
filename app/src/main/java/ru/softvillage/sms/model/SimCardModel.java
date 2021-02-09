@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.provider.Settings;
 import android.telephony.SubscriptionInfo;
 import android.text.TextUtils;
@@ -16,11 +17,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import ru.softvillage.sms.model.Entity.SimNum;
+import ru.softvillage.sms.model.Entity.SimNumTo;
 import ru.softvillage.sms.util.SubscriptionManUtil;
 import ru.softvillage.sms.model.Entity.Answer;
 import ru.softvillage.sms.model.Entity.AuthTo;
 import ru.softvillage.sms.model.Entity.Sim;
-import ru.softvillage.sms.network.NetworkService;
 import ru.softvillage.sms.presenter.SimPresenter;
 import ru.softvillage.sms.util.SecretCodeGenerator;
 
@@ -69,41 +70,24 @@ public class SimCardModel {
 
         @Override
         protected List<Sim> doInBackground(ContentValues... contentValues) {
-            // Узнаем Уникальный идентификатор устройства
-            ContentResolver contentResolver = presenter.getView().getContentResolver();
-            @SuppressLint("HardwareIds") String android_id = Settings.Secure.getString(contentResolver,
-                    Settings.Secure.ANDROID_ID);
-            Log.d(TAG, "Уникальный идентификатор устройста: " + android_id);
-            // Узнаем версию Android API
-            int androidVersionApi = android.os.Build.VERSION.SDK_INT;
+            sendAuthTo();
 
-            // Создаем Transfer Object Authentication
-            AuthTo authTo = new AuthTo(simList, android_id, androidVersionApi);
+            List<SimNumTo> simNumToList = new ArrayList<>();
+            for (Sim sim : simList) {
+                simNumToList.add(new SimNumTo(sim.getIccid(), null, sim.getSecureCode()));
+            }
+            getNumberWhile(simNumToList);
+
+            return simList;
+        }
+
+        private void getNumberWhile(List<SimNumTo> simNumToList) {
             while (simList.size() > flag) {
-                presenter.getNetworkService().postCheckNumberApi().postAuth(authTo).enqueue(new Callback<Answer>() {
+                presenter.getNetworkService().postCheckCodeApi().postAuth(simNumToList).enqueue(new Callback<Answer>() {
                     @Override
                     public void onResponse(Call<Answer> call, Response<Answer> response) {
                         Answer answer = response.body();
-                        assert answer != null;
-                        for (SimNum num : answer.getSimNumList()) {
-                            if (!TextUtils.isEmpty(num.getNumber())) {
-                                for (Sim sim : simList) {
-                                    if (sim.getIccid().equals(num.getIccid())) {
-                                        Log.d(TAG, "Номер телефона " + num.getNumber() + "\r\n flag count = " + flag + "\r\nSimList size: " + simList.size());
-                                        sim.setPhoneNumber(num.getNumber());
-                                        flag++;
-                                    }
-                                }
-                                //sendSMS();
-                                //Добавляем номера телефонов в simList
-                            } else {
-                                if (smsFlag < 1) {
-                                    presenter.sendSms();
-                                    smsFlag++;
-                                }
-                            }
-                        }
-                        presenter.showPhoneNumberOnDisplay(simList);
+                        checkAnswer(answer, "simNumTo");
                     }
 
                     @Override
@@ -119,7 +103,53 @@ public class SimCardModel {
                 }
 
             }
-            return simList;
+        }
+
+        private void sendAuthTo() {
+            // Узнаем Уникальный идентификатор устройства
+            ContentResolver contentResolver = presenter.getView().getContentResolver();
+            @SuppressLint("HardwareIds") String android_id = Settings.Secure.getString(contentResolver,
+                    Settings.Secure.ANDROID_ID);
+            Log.d(TAG, "Уникальный идентификатор устройста: " + android_id);
+            // Узнаем версию Android API
+            int androidVersionApi = android.os.Build.VERSION.SDK_INT;
+
+            // Создаем Transfer Object Authentication
+            AuthTo authTo = new AuthTo(simList, android_id, androidVersionApi);
+            presenter.getNetworkService().postCheckNumberApi().postAuth(authTo).enqueue(new Callback<Answer>() {
+                @Override
+                public void onResponse(Call<Answer> call, Response<Answer> response) {
+                    Answer answer = response.body();
+                    checkAnswer(answer, "AuthTo");
+                }
+
+                @Override
+                public void onFailure(Call<Answer> call, Throwable t) {
+                    Log.d(TAG, "Неудачаная доставка по сети. Throwable:\r\n" + t.getMessage());
+                }
+            });
+        }
+
+        private void checkAnswer(Answer answer, String type) {
+            for (SimNum num : answer.getSimNumList()) {
+                if (!TextUtils.isEmpty(num.getNumber())) {
+                    for (Sim sim : simList) {
+                        if (sim.getIccid().equals(num.getIccid())) {
+                            Log.d(TAG, "Номер телефона " + num.getNumber() + "\r\n flag count = " + flag + "\r\nSimList size: " + simList.size());
+                            sim.setPhoneNumber(num.getNumber());
+                            flag++;
+                        }
+                    }
+                } else {
+                    if (type.equals("AuthTo")) {
+                        if (smsFlag < 1) {
+                            presenter.sendSms();
+                            smsFlag++;
+                        }
+                    }
+                }
+            }
+            presenter.showPhoneNumberOnDisplay(simList);
         }
 
     }
