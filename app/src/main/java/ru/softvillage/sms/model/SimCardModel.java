@@ -25,12 +25,21 @@ import ru.softvillage.sms.presenter.SimPresenter;
 import ru.softvillage.sms.util.SecretCodeGenerator;
 
 public class SimCardModel {
+    private static SimCardModel instance;
+
     private static final String TAG = "SVsim";
     private final List<Sim> simList;
 
-    public SimCardModel(SubscriptionManUtil subscriptionList) {
+    private SimCardModel(SubscriptionManUtil subscriptionList) {
         simList = new ArrayList<>();
         initSims(subscriptionList);
+    }
+
+    public static SimCardModel getInstance(SubscriptionManUtil subscriptionList) {
+        if (instance == null) {
+            instance = new SimCardModel(subscriptionList);
+        }
+        return instance;
     }
 
     private void initSims(SubscriptionManUtil subscriptionList) {

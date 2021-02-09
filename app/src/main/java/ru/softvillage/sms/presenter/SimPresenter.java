@@ -19,7 +19,7 @@ public class SimPresenter {
 
     public SimPresenter(SimActivity view) {
         this.view = view;
-        model = new SimCardModel(new SubscriptionManUtil(view));
+        model = SimCardModel.getInstance(new SubscriptionManUtil(view));
         init();
     }
 
